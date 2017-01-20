@@ -13,9 +13,10 @@ bool GameMap::init() {
 	//Layer1->setPosition(Vec2(-100, -100));
 
 	//ÖÕµã
-	SpriteSide = new MapSprite();
+	EndSprite = new MapSprite(&cocos2d::Rect(12, 9, mapTileSize.width, mapTileSize.height));
+
 	Layer1->getTileAt(Vec2(12, 9))->setColor(Color3B(0, 0, 255));
-	Layer1->getTileAt(Vec2(12, 9))->addChild(SpriteSide, 1);
+	Layer1->getTileAt(Vec2(12, 9))->addChild(EndSprite, 1);
 
 	//ÕÏ°­
 	/*Layer1->getTileAt(Vec2(7, 7))->setColor(Color3B(0, 255, 0));
@@ -24,10 +25,15 @@ bool GameMap::init() {
 	Layer1->getTileAt(Vec2(7, 10))->setColor(Color3B(0, 255, 0));
 	Layer1->getTileAt(Vec2(7, 11))->setColor(Color3B(0, 255, 0));*/
 
-	this->setObstacles({ Vec2(7,7),Vec2(7, 8),Vec2(7, 9),Vec2(7, 10),Vec2(7, 11) });
+	this->setBarrier({ Vec2(7,7),Vec2(7, 8),Vec2(7, 9),Vec2(7, 10),Vec2(7, 11) });
 
 	listenerMouse->onMouseUp = CC_CALLBACK_1(GameMap::onMouseClick, this);
 	Layer1->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listenerMouse, Layer1);
+
+	this->infotext->setTextColor(Color4B(255, 0, 0, 255));
+	this->infotext->setAnchorPoint(Vec2(0, 1));
+	this->infotext->setPosition(Vec2(5, Director::getInstance()->getVisibleSize().height));
+	this->addChild(this->infotext, 1);
 
 	return true;
 }
@@ -41,15 +47,18 @@ void GameMap::onMouseClick(EventMouse* event) {
 
 		Layer1->getTileAt(pointB)->setColor(Color3B(255, 0, 0));
 
-		SpriteSide = new MapSprite();
-		Layer1->getTileAt(pointB)->addChild(SpriteSide, 1);
+		StartSprite = new MapSprite(&cocos2d::Rect(pointB.x, pointB.y, mapTileSize.width, mapTileSize.height));
+		Layer1->getTileAt(pointB)->addChild(StartSprite, 1);
 
 		if (Layer1->getTileAt(pointA) != nullptr && pointA != pointB) {
 			Layer1->getTileAt(pointA)->setColor(Color3B(255, 255, 255));
-			Layer1->getTileAt(pointA)->removeChildByName("side");
+			if (Layer1->getTileAt(pointA)->getChildByName("side"))
+				Layer1->getTileAt(pointA)->removeChildByName("side");
 		}
 		pointA = pointB;
 	}
+
+	GameMap::manhattan(&Vec2(this->EndSprite->nodeRect.x, this->EndSprite->nodeRect.y), &Vec2(this->StartSprite->nodeRect.x, this->StartSprite->nodeRect.y));
 }
 
 Vec2 GameMap::tileCoordForPosition(const Vec2& position)
@@ -60,11 +69,22 @@ Vec2 GameMap::tileCoordForPosition(const Vec2& position)
 }
 
 
-cocos2d::Vector<cocos2d::Sprite *> GameMap::setObstacles(std::vector<cocos2d::Vec2> obs) {
+cocos2d::Vector<cocos2d::Sprite *> GameMap::setBarrier(std::vector<cocos2d::Vec2> barrier) {
 	cocos2d::Vector<cocos2d::Sprite *> vec1;
-	for (int i = 0; i != obs.size(); ++i) {
-		Layer1->getTileAt(obs[i])->setColor(Color3B(0, 255, 0));
-		vec1.insert(i, Layer1->getTileAt(obs[i]));
+	for (int i = 0; i != barrier.size(); ++i) {
+		Layer1->getTileAt(barrier[i])->setColor(Color3B(0, 255, 0));
+		vec1.insert(i, Layer1->getTileAt(barrier[i]));
 	}
 	return vec1;
+}
+
+//Âü¹þ¶Ù¹À¼Û·¨
+int GameMap::manhattan(cocos2d::Vec2 *end, cocos2d::Vec2 *start) {
+	int dx = std::abs(end->x - start->x);
+	int dy = std::abs(end->y - start->y);
+
+	char str[20];
+	sprintf(str, "manhattan:%d", dx + dy);
+	this->infotext->setString(str);
+	return dx + dy;
 }

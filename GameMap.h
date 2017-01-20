@@ -21,15 +21,21 @@ private:
 	cocos2d::Size layerSize;
 	cocos2d::Size mapTileSize;
 
-	MapSprite* SpriteSide = nullptr;
+	MapSprite* EndSprite = nullptr;
+	MapSprite* StartSprite = nullptr;
+	MapSprite* NodeSprite = nullptr;
 
 	cocos2d::EventListenerMouse *listenerMouse = cocos2d::EventListenerMouse::create();
 	void onMouseClick(cocos2d::EventMouse* event);
 
 	cocos2d::Vec2 tileCoordForPosition(const cocos2d::Vec2& position);
 
-	cocos2d::Vector<cocos2d::Sprite *> setObstacles(std::vector<cocos2d::Vec2> obs);
+	cocos2d::Vector<cocos2d::Sprite *> setBarrier(std::vector<cocos2d::Vec2> barrier);
 
+	//Âü¹þ¶Ù¹À¼Û·¨
+	int manhattan(cocos2d::Vec2 *end, cocos2d::Vec2 *start);
+
+	cocos2d::Label *infotext = cocos2d::Label::createWithSystemFont("", "Arial", 20);
 };
 #endif //__GAMEMAP_H__
 
